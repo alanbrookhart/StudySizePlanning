@@ -1,4 +1,4 @@
-name: Test and Deploy to shinyapps.io 
+name: Test and Deploy to shinyapps.io  
 
 on:
   push:
