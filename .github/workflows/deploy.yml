@@ -34,23 +34,13 @@ jobs:
             any::rcmdcheck
             any::testthat
             any::rsconnect
+            any::cpp11
+            any::progress
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libcurl4-openssl-dev libssl-dev libxml2-dev
-
-      - name: Check R package dependencies
-        run: |
-          Rscript -e "
-          if (!require('shiny')) install.packages('shiny')
-          if (!require('tidyverse')) install.packages('tidyverse')
-          if (!require('ggiraph')) install.packages('ggiraph')
-          if (!require('DT')) install.packages('DT')
-          if (!require('survival')) install.packages('survival')
-          if (!require('testthat')) install.packages('testthat')
-          if (!require('rsconnect')) install.packages('rsconnect')
-          "
 
       - name: Run unit tests
         run: |
