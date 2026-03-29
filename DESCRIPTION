@@ -1,0 +1,26 @@
+Package: StudySizePlanning
+Title: Study Design Precision and Power Calculator
+Version: 1.0.0
+Authors@R:
+    person("M. Alan Brookhart", email = "alan@brookhart.org", role = c("aut", "cre"))
+Description: Interactive Shiny application for calculating precision and
+    statistical power in cohort studies with various complications including
+    censoring, IPTW, and clustering.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 4.0.0)
+Imports:
+    shiny,
+    tidyverse,
+    ggiraph,
+    DT,
+    survival
+Suggests:
+    testthat (>= 3.0.0),
+    rmarkdown,
+    knitr,
+    rsconnect
+Config/testthat/edition: 3
+RoxygenNote: 7.0.0
