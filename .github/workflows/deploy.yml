@@ -81,32 +81,33 @@ jobs:
           "
 
       - name: Deploy to shinyapps.io
-              if: success()
-              run: |
-                Rscript -e "
-                # Reset repository to standard CRAN to fix the RSPM url scheme error
-                options(repos = c(CRAN = 'https://cloud.r-project.org'))
-                
-                library(rsconnect)
-      
-                # Deploy the app
-                deployApp(
-                  appName = 'StudySizePlanning',
-                  appFiles = c(
-                    'app.R',
-                    'R/statistical_functions.R',
-                    'results.csv',
-                    'DESCRIPTION'
-                  ),
-                  appTitle = 'Study Design: Precision & Power Calculator',
-                  forceUpdate = TRUE,
-                  launch.browser = FALSE,
-                  logLevel = 'verbose'
-                )
-      
-                cat('\n✓ Deployment complete!\n')
-                cat('App URL: https://${{ secrets.SHINYAPPS_ACCOUNT }}.shinyapps.io/StudySizePlanning\n')
-                "
+        if: success()
+        run: |
+          Rscript -e "
+          # Reset repository to standard CRAN to fix the RSPM url scheme error
+          options(repos = c(CRAN = 'https://cloud.r-project.org'))
+          
+          library(rsconnect)
+
+          # Deploy the app
+          deployApp(
+            appName = 'StudySizePlanning',
+            appFiles = c(
+              'app.R',
+              'R/statistical_functions.R',
+              'results.csv',
+              'DESCRIPTION'
+            ),
+            appTitle = 'Study Design: Precision & Power Calculator',
+            forceUpdate = TRUE,
+            launch.browser = FALSE,
+            logLevel = 'verbose'
+          )
+
+          cat('\n✓ Deployment complete!\n')
+          cat('App URL: https://${{ secrets.SHINYAPPS_ACCOUNT }}.shinyapps.io/StudySizePlanning\n')
+          "
+
       - name: Deployment summary
         if: success()
         run: |
@@ -117,6 +118,6 @@ jobs:
           echo "**App URL:** https://${{ secrets.SHINYAPPS_ACCOUNT }}.shinyapps.io/StudySizePlanning" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "✓ All unit tests passed (38 tests)" >> $GITHUB_STEP_SUMMARY
+          echo "✓ All unit tests passed" >> $GITHUB_STEP_SUMMARY
           echo "✓ App loaded successfully" >> $GITHUB_STEP_SUMMARY
           echo "✓ Deployed to shinyapps.io" >> $GITHUB_STEP_SUMMARY
