@@ -283,12 +283,9 @@ ui <- fluidPage(
                      p("We start with a simple case of a fully observed outcome and then explore how the precision and power are impacted as successive complexities are addressed:"),
                      
                      tags$ul(
-                       tags$li("First, we explore how precision is affected by right censoring."),
-                       tags$li("Next, we examine how precision is decreased when confounding is controlled via IPT weights using Kish's formula, as discussed in Shook-sa and Hudgens. In the application, we provide a simple simulation that allows the reader to explore how different assumptions about the propensity score distribution result in different degrees of variance inflation.")
-                     ),
-                     
-                     br(),
-                     p("Each section builds on the previous one by adding new parameters to be set in addition to those previously defined.")
+                       tags$li(strong("Censoring: "), "We allow the user to introduce different degrees of right censoring in each treatment group."),
+                       tags$li(strong("Confounding: "), "We allow the user to introduce variance inflation due to the control of confounding via IPT weights.  The variance inflation is computed using Kish's formula, as discussed in Shook-sa and Hudgens. To help the user set varince inflation parameters thoughtfully,  we provide a simple simulation that allows the reader to explore how different assumptions about the propensity score distribution result in different degrees of variance inflation.")
+                     )
                  )
         ),
         # Power Calculation Mode Tabs
