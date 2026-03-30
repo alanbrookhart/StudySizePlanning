@@ -373,7 +373,7 @@ ui <- fluidPage(
         
         tabPanel("Derivations & Formulas", 
                  br(),
-                 p("This section details the mathematical formulas used to calculate precision and statistical power. Power is explicitly evaluated for both the Risk Difference (additive scale) and Risk Ratio (multiplicative scale) to account for their distinct variance estimators."),
+                 p("This section details the mathematical formulas used to calculate precision, statistical power, and required sample size. Power is explicitly evaluated for both the risk difference (additive scale) and risk ratio (multiplicative scale) to account for their distinct variance estimators."),
                  
                  div(class = "math-section",
                      h3("1. Risk Difference (RD) Precision & Power"),
@@ -387,7 +387,7 @@ ui <- fluidPage(
                  ),
                  
                  div(class = "math-section",
-                     h3("2. Greenwood's Variance Formula for Right Censoring"),
+                     h3("2. Greenwood's Variance Formula for Right Censored Data"),
                      p("As sample size \\(n \\to \\infty\\), Greenwood's formula for the variance of the Kaplan-Meier estimator converges to a continuous integral. The expected proportion of subjects at risk at time \\(u\\) is the product of the event-free survival function \\(S(u)\\) and the censoring-free survival function \\(G(u)\\):"),
                      p("$$Var(\\hat{S}(t)) \\approx \\frac{S(t)^2}{n} \\int_0^t \\frac{\\lambda_T(u)}{S(u)G(u)} du$$"),
                      
@@ -399,10 +399,10 @@ ui <- fluidPage(
                      
                      p("To make this useful for sample size planning, we map the hazard rates back to the marginal cumulative risk of the event (\\(p_t\\)) and censoring (\\(p_c\\)) at time \\(t\\). Under the exponential model, \\(p_t = 1 - \\exp(-\\lambda_T t)\\) and \\(p_c = 1 - \\exp(-\\lambda_C t)\\). Taking the natural log isolates the parameters: \\(\\lambda_T t = -\\log(1 - p_t)\\) and \\(\\lambda_C t = -\\log(1 - p_c)\\)."),
                      
-                     p("By multiplying the hazard ratio term by \\(t/t\\) and recognizing that \\(S(t)^2 = (1 - p_t)^2\\), we can substitute these parameterizations directly into the evaluated integral. Expanding the exponential term as \\(\\exp(\\lambda_T t) \\exp(\\lambda_C t)\\) allows us to substitute the inverse probabilities, yielding the exact closed-form asymptotic solution:"),
+                     p("By multiplying the hazard ratio term by \\(t/t\\) and recognizing that \\(S(t)^2 = (1 - p_t)^2\\), we can substitute these parameterizations directly into the evaluated integral. Expanding the exponential term as \\(\\exp(\\lambda_T t) \\exp(\\lambda_C t)\\) allows us to substitute the inverse probabilities, yielding a closed-form representation of the asymptotic variance:"),
                      p("$$Var(\\hat{p}(t)) = \\frac{(1-p_t)^2}{n} \\left( \\frac{-\\log(1-p_t)}{-\\log(1-p_t) - \\log(1-p_c)} \\right) \\left[ \\frac{1}{(1-p_t)(1-p_c)} - 1 \\right]$$"),
                      
-                     p(HTML("<b>A Note on Asymptotic Limitations:</b> Because the Kaplan-Meier estimator is non-parametric, finding an exact finite-sample variance for it is mathematically intractable (due to random denominators and the non-zero probability of an undefined risk set). While this closed-form integral provides the exact <i>asymptotic</i> variance based on the data generating process, it serves as an approximation of the true variance in finite samples, particularly breaking down when risk sets become very small."))
+                     p(HTML("<b>A Note on Asymptotic Limitations: While this closed-form integral provides the exact <i>asymptotic</i> variance based on the data generating process, it serves as an approximation of the true variance in finite samples, particularly breaking down when risk sets become very small."))
                  ),
                  
                  div(class = "math-section",
