@@ -402,7 +402,7 @@ ui <- fluidPage(
                      p("By multiplying the hazard ratio term by \\(t/t\\) and recognizing that \\(S(t)^2 = (1 - p_t)^2\\), we can substitute these parameterizations directly into the evaluated integral. Expanding the exponential term as \\(\\exp(\\lambda_T t) \\exp(\\lambda_C t)\\) allows us to substitute the inverse probabilities, yielding a closed-form representation of the asymptotic variance:"),
                      p("$$Var(\\hat{p}(t)) = \\frac{(1-p_t)^2}{n} \\left( \\frac{-\\log(1-p_t)}{-\\log(1-p_t) - \\log(1-p_c)} \\right) \\left[ \\frac{1}{(1-p_t)(1-p_c)} - 1 \\right]$$"),
                      
-                     p(HTML("<b>A Note on Asymptotic Limitations: While this closed-form integral provides the exact <i>asymptotic</i> variance based on the data generating process, it serves as an approximation of the true variance in finite samples, particularly breaking down when risk sets become very small."))
+                     p(HTML("<b>A Note on Asymptotic Limitations: While this closed-form integral provides the exact <i>asymptotic</i> variance based on the data generating process, it serves as an approximation of the true variance in finite samples, particularly breaking down when risk sets become very small.</b>"))
                  ),
                  
                  div(class = "math-section",
