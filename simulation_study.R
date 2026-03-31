@@ -6,18 +6,10 @@ library(purrr)
 library(future)
 library(furrr)
 
-# --- 1. Theoretical Statistical Functions ---
-greenwood_var_closed <- function(p_t, p_c, n) {
-  if (all(p_t == 0)) return(rep(0, length(p_t)))
-  L_T <- -log(1 - p_t)
-  L_C <- -log(1 - p_c)
-  var_expected <- ((1 - p_t)^2 / n) * (L_T / (L_T + L_C)) * (1 / ((1 - p_t) * (1 - p_c)) - 1)
-  if(length(p_c) == 1) p_c <- rep(p_c, length(p_t))
-  var_expected <- ifelse(p_c == 0, (p_t * (1 - p_t)) / n, var_expected)
-  return(var_expected)
-}
-
-variance_iptw <- function(var, inflation_factor) { var * inflation_factor }
+# --- 1. Source Statistical Functions from App ---
+# Use the same functions that the app uses to ensure validation is testing
+# the actual implementation
+source("R/statistical_functions.R")
 
 # --- 2. Data Generating Process ---
 generate_data <- function(n, alpha_1, beta_X, lambda_C, lambda_0, beta_A, t_max = 1) {
@@ -72,8 +64,8 @@ evaluate_scenario <- function(n_sample, alpha_1, beta_X, lambda_C, lambda_0, bet
   
   w0 <- df_true$iptw[df_true$A == 0]
   w1 <- df_true$iptw[df_true$A == 1]
-  v_inf_1 <- length(w0) * sum(w0^2) / (sum(w0))^2
-  v_inf_2 <- length(w1) * sum(w1^2) / (sum(w1))^2
+  v_inf_1 <- calculate_variance_inflation(w0)
+  v_inf_2 <- calculate_variance_inflation(w1)
   
   n1_sim <- n_sample / 2
   n2_sim <- n_sample / 2
@@ -175,9 +167,13 @@ run_grid_simulation <- function(n_sim = 500) {
 set.seed(101)
 final_grid_results <- run_grid_simulation(n_sim = 500)
 
+# Save results to CSV for app to load
+write.csv(final_grid_results, "results.csv", row.names = TRUE)
+cat("\n✓ Results saved to results.csv\n")
+
 # Preview highlighting the Bias vs Ratio tradeoff
 print("=== Sample Output: Low Baseline (~5%), N=10,000 ===")
-final_grid_results %>% 
+final_grid_results %>%
   filter(N == 10000, BaseRisk == "Low (~5%)") %>%
   select(Assoc_AX, Assoc_YX, Abs_Bias_RD, Abs_Bias_RR, Ratio_RD, Ratio_logRR) %>%
   tail(5) %>% print()
