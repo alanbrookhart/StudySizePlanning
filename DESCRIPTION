@@ -16,6 +16,7 @@ Imports:
     tidyverse,
     ggiraph,
     DT,
+    patchwork,
     survival
 Suggests:
     testthat (>= 3.0.0),
