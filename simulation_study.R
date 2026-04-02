@@ -115,11 +115,12 @@ evaluate_scenario <- function(n_sample, alpha_1, beta_X, lambda_C, lambda_0, bet
 }
 
 # --- 4. Define Grid and Execute ---
+# --- 4. Define Grid and Execute ---
 run_grid_simulation <- function(n_sim = 500) {
   
   grid <- expand.grid(
     N = c(500, 2000, 10000),
-    BaseRisk = c("Low (~5%)", "High (~50%)"),
+    BaseRisk = c("Low (~5%)", "Moderate (~20%)", "High (~50%)"),
     Censoring = c("None", "Modest", "High"),
     Assoc_AX = c("None", "Modest", "Strong"),
     Assoc_YX = c("None", "Modest", "Strong"),
@@ -133,8 +134,16 @@ run_grid_simulation <- function(n_sim = 500) {
       beta_X = case_when(Assoc_YX == "None" ~ 0, Assoc_YX == "Modest" ~ 0.5, Assoc_YX == "Strong" ~ 1.5),
       
       # Target an RD of roughly +0.10 across baselines
-      lambda_0 = case_when(BaseRisk == "Low (~5%)" ~ 0.051, BaseRisk == "High (~50%)" ~ 0.693),
-      beta_A = case_when(BaseRisk == "Low (~5%)" ~ 1.153, BaseRisk == "High (~50%)" ~ 0.279)
+      lambda_0 = case_when(
+        BaseRisk == "Low (~5%)" ~ 0.051, 
+        BaseRisk == "Moderate (~20%)" ~ 0.223, 
+        BaseRisk == "High (~50%)" ~ 0.693
+      ),
+      beta_A = case_when(
+        BaseRisk == "Low (~5%)" ~ 1.153, 
+        BaseRisk == "Moderate (~20%)" ~ 0.469, 
+        BaseRisk == "High (~50%)" ~ 0.279
+      )
     )
   
   cat(sprintf("Running grid of %d scenarios (%d simulations each)...\n", nrow(grid), n_sim))
@@ -162,7 +171,6 @@ run_grid_simulation <- function(n_sim = 500) {
   
   return(results)
 }
-
 # Execute
 set.seed(101)
 final_grid_results <- run_grid_simulation(n_sim = 500)

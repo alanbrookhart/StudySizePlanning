@@ -1,6 +1,7 @@
 library(shiny)
 library(tidyverse)
 library(ggiraph)
+library(patchwork)
 library(DT)
 
 # Source statistical functions
@@ -476,8 +477,8 @@ ui <- fluidPage(
             ),
             
             h3("2. Key Findings & The Limits of Kish's Formula"),
-            p("The results support the validity of the formulas for the situation when no confounding is present. The ratio of empirical to theoretical variance is close to 1.00."),
-            p(HTML("However, the results also highlight a known theoretical boundary of using <b>Kish's Design Effect</b> for sample size planning in causal inference. Kish's formula assumes that statistical weights are independent of the outcome. In the presence of strong confounding the ratio of the actual empirical variance to the theoretical variance.")),
+            p("The results support the validity of the formulas for the situation when only modest confounding is present. The ratio of empirical to theoretical variance is close to 1.00."),
+            p(HTML("However, the results highlight a known issue <b>Kish's Design Effect</b> for sample size planning in causal inference. Kish's formula assumes that statistical weights are independent of the outcome. In the presence of strong confounding the ratio of the actual empirical variance to the theoretical variance will be greater than 1. Kish's formula can be corrected, if pilot data are available (see Shook-sa and Hudgens.)")),
             p("As seen in the plot below, as the absolute confounding bias in the raw data increases, the theoretical variance increasingly underestimates the true empirical variance (Ratio > 1.0). Therefore, while Kish's formula provides a reliable approach for planning, researchers suspecting severe confounding should be aware that their final study may have slightly lower power than the formula predicts."),
             
             hr(),
@@ -884,7 +885,6 @@ server <- function(input, output, session) {
     req(validation_data())
     d <- validation_data()
 
-    # Filter to only scenarios with confounding (where Abs_Bias_RD > 0)
     d_plot <- d %>%
       #filter(Abs_Bias_RD > 0) %>%
       mutate(
@@ -892,22 +892,37 @@ server <- function(input, output, session) {
         Sample_Size = factor(N, levels = c(500, 2000, 10000))
       )
 
-    p <- ggplot(d_plot, aes(x = Abs_Bias_RR, y = Ratio_RD, color = Assoc_AX)) +
+    p1 <- ggplot(d_plot, aes(x = Abs_Bias_RD, y = Ratio_RD, color = Assoc_AX)) +
       geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
       geom_point_interactive(
-        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Abs Bias (RD): %.3f<br>Variance Ratio: %.3f",
-                              N, BaseRisk, Assoc_AX,Assoc_YX, Abs_Bias_RD, Ratio_RD)),
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Abs Bias (RD): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX,Assoc_YX, Abs_Bias_RD, Ratio_RD)),
         size = 3, alpha = 0.7
-      ) + #facet_grid(Assoc_AX) +
-      #geom_smooth(se = FALSE, method = "loess", alpha = 0.3) +
+      ) + 
       labs(
         x = "\nAbsolute Confounding Bias (Raw Risk Difference)",
-        y = "Ratio: Empirical Variance / Theoretical Variance\n",
+        y = "Empirical Variance / \nTheoretical Variance\n",
         color = "Sample Size",
         title = "Variance Approximation Error vs. Confounding Strength"
       ) +
       plot_theme +
       scale_color_viridis_d(end = 0.8)
+    
+    p2 <- ggplot(d_plot, aes(x = Abs_Bias_RR, y = Ratio_logRR, color = Assoc_AX)) +
+      geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
+      geom_point_interactive(
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Abs Bias (log RR): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX,Assoc_YX, Abs_Bias_RR, Ratio_logRR)),
+        size = 3, alpha = 0.7
+      ) + 
+      labs(
+        x = "\nAbsolute Confounding Bias (Log Risk Ratio)",
+        y = "Empirical Variance / \n Theoretical Variance\n",
+        color = "Sample Size",
+        title = "Variance Approximation Error vs. Confounding Strength"
+      ) +
+      plot_theme +
+      scale_color_viridis_d(end = 0.8)
+      
+    p = p1 / p2
 
     girafe(ggobj = p, options = list(opts_hover(css = "fill:black; stroke:black;")))
   })
