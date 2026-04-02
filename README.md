@@ -102,8 +102,6 @@ Results include:
 - Bias and RMSE
 - Variance inflation factors
 
-View the validation report at: [simulation_study.html](simulation_study.html)
-
 ## Statistical Methods
 
 ### 1. Baseline Variance
