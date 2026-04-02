@@ -215,3 +215,65 @@ test_that("calculate_variance_inflation matches Kish's formula", {
   result <- calculate_variance_inflation(weights)
   expect_equal(result, expected)
 })
+
+# ---------------------------------------------------------
+# Reference Formula: Numerical Integration of Greenwood
+# ---------------------------------------------------------
+greenwood_integral <- function(p_t, p_c, n, t = 1) {
+  # Handle zero risk to avoid errors
+  if (all(p_t == 0)) return(rep(0, length(p_t)))
+  
+  # Map marginal risks back to exponential hazard rates
+  lambda_T <- -log(1 - p_t) / t
+  lambda_C <- -log(1 - p_c) / t
+  
+  # Define the integrand
+  integrand <- function(u) {
+    lambda_T * exp((lambda_T + lambda_C) * u)
+  }
+  
+  # Evaluate the integral
+  integral_result <- integrate(integrand, lower = 0, upper = t)$value
+  
+  # Multiply by S(t)^2 / n
+  S_t <- 1 - p_t
+  variance <- ((S_t^2) / n) * integral_result
+  
+  return(variance)
+}
+
+# ---------------------------------------------------------
+# Unit Test: Asserting Equivalence
+# ---------------------------------------------------------
+test_that("greenwood_var_closed exactly matches numerical integration", {
+  n <- 1000  
+  
+  # Define a grid of varying outcome and censoring risks to test
+  pt_seq <- c(0.01, 0.10, 0.30, 0.50, 0.80, 0.95)
+  # Added 0.00 to explicitly test the binomial fallback in your function
+  pc_seq <- c(0.00, 0.01, 0.10, 0.30, 0.50, 0.80, 0.95) 
+  
+  for (pt in pt_seq) {
+    for (pc in pc_seq) {
+      
+      # Determine expected variance based on the reference standard
+      if (pc == 0) {
+        # If censoring is exactly 0, the reference standard is the binomial variance
+        val_expected <- variance_baseline(pt, n)
+      } else {
+        # Otherwise, the reference standard is the integrated Greenwood formula
+        val_expected <- greenwood_integral(pt, pc, n)
+      }
+      
+      # Call the function directly from statistical_functions.R
+      val_app_function <- greenwood_var_closed(pt, pc, n)
+      
+      # Check for numeric equivalence
+      expect_equal(
+        val_app_function, 
+        val_expected, 
+        info = paste("Failed at pt =", pt, "and pc =", pc)
+      )
+    }
+  }
+})
