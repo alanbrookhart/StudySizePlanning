@@ -34,7 +34,7 @@ jobs:
 
       - name: Install R packages natively (Bypasses metadata bug)
         run: |
-          Rscript -e "install.packages(c('shiny', 'tidyverse', 'ggiraph', 'DT', 'survival', 'rsconnect', 'testthat', 'cpp11', 'progress'))"
+          Rscript -e "install.packages(c('shiny', 'tidyverse', 'ggiraph', 'DT', 'survival', 'rsconnect', 'testthat', 'cpp11', 'progress', 'patchwork'))"
 
       - name: Run unit tests
         run: |
