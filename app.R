@@ -191,7 +191,7 @@ ui <- fluidPage(
 
   tags$div(
     style = "background-color: #003366; color: white; text-align: center; padding: 20px; margin: 0;",
-    tags$h2(style = "margin: 0; font-weight: bold;", "Study Design: Precision & Power Calculator")
+    tags$h2(style = "margin: 0; font-weight: bold;", "Precision, Power, and Sample Size Calculator for Studies of Risk")
   ),
   
   sidebarLayout(
