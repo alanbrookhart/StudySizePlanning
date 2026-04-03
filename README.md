@@ -1,6 +1,6 @@
 # Study Size Planning Application 
 
-Interactive Shiny application for calculating precision and statistical power in cohort studies with complications including censoring and IPTW.
+Interactive Shiny application for calculating precision and statistical power in cohort studies with complications including censoring and the use of inverse-probability of treatment weights (IPTWs).
 
 ## Features
 
@@ -29,8 +29,6 @@ Interactive Shiny application for calculating precision and statistical power in
 ├── DESCRIPTION                # Package metadata
 
 ```
-
-## Local Development
 
 ### Prerequisites
 
@@ -141,6 +139,3 @@ MIT License
 
 For questions or issues, please contact alan.brookhart@duke.edu.
 
----
-
-*Last updated: 2025*
