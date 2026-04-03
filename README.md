@@ -131,6 +131,18 @@ where $A_i$ is the treatment group and $W_i$ is the IPT weight for patient $i$. 
 
 See the **Derivations & Formulas** tab in the application for complete mathematical details.
 
+## Release Protocol
+
+Before deploying a new version to production, follow these steps strictly to ensure reproducibility and version control:
+
+1. **Update Version:** Increment `APP_VERSION` and `APP_LAST_UPDATED` at the top of `app.R`.
+2. **Update Changelog:** Add a new section to `NEWS.md` detailing the changes. Copy this text into the "About this app" UI tab.
+3. **Run Validations:** Execute `simulation_study.R` to ensure the core variance math hasn't degraded.
+4. **Commit & Tag:** * `git commit -am "Release vX.X.X - [Brief Description]"`
+    * `git tag vX.X.X`
+    * `git push origin main --tags`
+5. **Deploy:** Push to the `main` or `master` branch to trigger automatic deployment to shinyapps.io (if configured), or deploy manually using `rsconnect::deployApp()`.
+
 ## License
 
 MIT License

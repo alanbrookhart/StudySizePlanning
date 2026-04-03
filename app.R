@@ -4,6 +4,9 @@ library(ggiraph)
 library(patchwork)
 library(DT)
 
+APP_VERSION <- "1.0.0"
+APP_LAST_UPDATED <- "April 3rd, 2026"
+
 # Source statistical functions
 source("R/statistical_functions.R")
 
@@ -287,6 +290,10 @@ ui <- fluidPage(
                        tags$li(strong("Censoring: "), "We allow the user to introduce different degrees of right censoring in each treatment group."),
                        tags$li(strong("Confounding: "), "We allow the user to introduce variance inflation due to the control of confounding via IPT weights.  The variance inflation is computed using Kish's formula, as discussed in Shook-sa and Hudgens. To help the user set varince inflation parameters thoughtfully,  we provide a simple simulation that allows the reader to explore how different assumptions about the propensity score distribution result in different degrees of variance inflation.")
                      )
+                 ),
+                h3("Version History"),
+                 tags$ul(
+                   tags$li(strong("v1.0.0 (April 3rd, 2026): "), "Initial release.")
                  )
         ),
         # Power Calculation Mode Tabs
@@ -471,10 +478,10 @@ ui <- fluidPage(
                           h3("1. Simulation Design & Data Generating Mechanism"),
                           p("Simulated datasets were generated to reflect an observational cohort study with a time-to-event outcome. To introduce systematic selection bias while avoiding mathematically degenerative hazard extremes, a bounded continuous confounder was drawn from a uniform distribution, \\(X \\sim \\text{Uniform}(-\\sqrt{3}, \\sqrt{3})\\), maintaining a mean of 0 and a variance of 1."),
                           p("Treatment assignment was generated via a logistic model, \\(P(A=1 | X) = [1 + \\exp(-\\alpha_1 X)]^{-1}\\). Time-to-event outcomes were simulated using an exponential survival model with hazard function \\(h(t | A, X) = \\lambda_0 \\exp(\\beta_A A + \\beta_X X)\\), and independent right-censoring times were drawn from an exponential distribution."),
-                          p("Data were generated across a full factorial grid varying sample size (N=500 to 10,000), baseline risk (~5%, ~20%, ~50%), censoring rates, and the strength of confounding. For each scenario:"),
+                          p("Data were generated across a full factorial grid varying sample size (N=500 to 10,000), baseline risk (~5%, ~20%, ~50%), censoring rates (0%, ~8%, ~25%), and strength of confounding (varying both the A-X and X-Y associations). For each scenario:"),
                           tags$ul(
                             tags$li("A 'Super-Population' of N=500,000 was generated to establish the true, causal marginal risks via exact potential outcomes."),
-                            tags$li("500 finite samples were drawn. For each sample, subject-specific stabilized Inverse Probability of Treatment Weights (IPTW) were estimated, and survival curves were fit using the weighted Kaplan-Meier estimator."),
+                            tags$li("500 samples were drawn. For each sample, subject-specific Inverse Probability of Treatment Weights (IPTW) were estimated, and survival curves were fit using the weighted Kaplan-Meier estimator."),
                             tags$li(strong("Initial Confounding Bias:"), " Measured as the absolute difference between the crude, unadjusted estimates and the true potential outcomes to quantify the severity of selection bias."),
                             tags$li(strong("Estimator Bias:"), " Measured as the residual bias of the IPTW estimator to verify successful recovery of causal parameters."),
                             tags$li(strong("Variance Validity:"), " The empirical variance of the Risk Difference (RD) and log Risk Ratio (log RR) across the 500 simulations was compared directly to the theoretical variance calculated by the application's planning formulas.")
@@ -902,7 +909,7 @@ server <- function(input, output, session) {
     p1 <- ggplot(d_plot, aes(x = Confounding_RD, y = Ratio_RD, color = Assoc_AX)) +
       geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
       geom_point_interactive(
-        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (RD): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_RD, Ratio_RD)),
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (RD): %.3f<br>Censoring: %s<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_RD, Censoring, Ratio_RD)),
         size = 3, alpha = 0.7
       ) + 
       labs(
@@ -917,7 +924,7 @@ server <- function(input, output, session) {
     p2 <- ggplot(d_plot, aes(x = Confounding_logRR, y = Ratio_logRR, color = Assoc_AX)) +
       geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
       geom_point_interactive(
-        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (log RR): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_logRR, Ratio_logRR)),
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (log RR): %.3f<br>Censoring: %s<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_logRR, Censoring,Ratio_logRR)),
         size = 3, alpha = 0.7
       ) + 
       labs(
