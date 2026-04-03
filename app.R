@@ -463,34 +463,38 @@ ui <- fluidPage(
                  )
         ),
         tabPanel("Methodological Validation",
-    fluidRow(
-        column(12,
-            h2("Monte Carlo Simulation: Finite Sample Validation"),
-            p("To validate the approximations used in this application for sample size planning, we conducted a Monte Carlo simulation. The simulation evaluates how well the theoretical variance formulas (specifically the closed-form Greenwood formula and Kish's survey design effect) approximate the true empirical variance of the estimators in finite samples."),
-            
-            h3("1. Simulation Design"),
-            p("Data were generated across 162 distinct scenarios, varying sample size (N=500 to 10,000), baseline risk (~5% and ~50%), censoring rates, and the strength of confounding (both the strenght of the confounder-treatment relation and confounder-outcome relation. For each scenario:"),
-            tags$ul(
-                tags$li("A 'Super-Population' of N=500,000 was generated to establish the true, causal marginal risks via exact potential outcomes."),
-                tags$li("500 finite samples were drawn. For each sample, the data was weighted via Inverse Probability of Treatment Weighting (IPTW), and survival curves were fit using the weighted Kaplan-Meier estimator."),
-                tags$li("The empirical variance of the Risk Difference (RD) and log Risk Ratio (RR) across the 500 simulations was compared directly to the theoretical variance calculated by the application's planning formulas.")
-            ),
-            
-            h3("2. Key Findings & The Limits of Kish's Formula"),
-            p("The results support the validity of the formulas for the situation when only modest confounding is present. The ratio of empirical to theoretical variance is close to 1.00."),
-            p(HTML("However, the results highlight a known issue <b>Kish's Design Effect</b> for sample size planning in causal inference. Kish's formula assumes that statistical weights are independent of the outcome. In the presence of strong confounding the ratio of the actual empirical variance to the theoretical variance will be greater than 1. Kish's formula can be corrected, if pilot data are available (see Shook-sa and Hudgens.)")),
-            p("As seen in the plot below, as the absolute confounding bias in the raw data increases, the theoretical variance increasingly underestimates the true empirical variance (Ratio > 1.0). Therefore, while Kish's formula provides a reliable approach for planning, researchers suspecting severe confounding should be aware that their final study may have slightly lower power than the formula predicts."),
-            
-            hr(),
-            h3("Variance Approximation Error by Confounding Strength"),
-            girafeOutput("sim_plot", width = "100%", height = "400px"),
-            
-            br(),
-            h3("Detailed Simulation Results Grid"),
-            DTOutput("sim_table")
+                 fluidRow(
+                   column(12,
+                          h2("Monte Carlo Simulation: Finite Sample Validation"),
+                          p("To validate the approximations used in this application for sample size planning, we conducted a Monte Carlo simulation. The simulation evaluates how well the theoretical variance formulas (specifically the closed-form Greenwood formula and Kish's survey design effect) approximate the true empirical variance of the estimators in finite samples."),
+                          
+                          h3("1. Simulation Design & Data Generating Mechanism"),
+                          p("Simulated datasets were generated to reflect an observational cohort study with a time-to-event outcome. To introduce systematic selection bias while avoiding mathematically degenerative hazard extremes, a bounded continuous confounder was drawn from a uniform distribution, \\(X \\sim \\text{Uniform}(-\\sqrt{3}, \\sqrt{3})\\), maintaining a mean of 0 and a variance of 1."),
+                          p("Treatment assignment was generated via a logistic model, \\(P(A=1 | X) = [1 + \\exp(-\\alpha_1 X)]^{-1}\\). Time-to-event outcomes were simulated using an exponential survival model with hazard function \\(h(t | A, X) = \\lambda_0 \\exp(\\beta_A A + \\beta_X X)\\), and independent right-censoring times were drawn from an exponential distribution."),
+                          p("Data were generated across a full factorial grid varying sample size (N=500 to 10,000), baseline risk (~5%, ~20%, ~50%), censoring rates, and the strength of confounding. For each scenario:"),
+                          tags$ul(
+                            tags$li("A 'Super-Population' of N=500,000 was generated to establish the true, causal marginal risks via exact potential outcomes."),
+                            tags$li("500 finite samples were drawn. For each sample, subject-specific stabilized Inverse Probability of Treatment Weights (IPTW) were estimated, and survival curves were fit using the weighted Kaplan-Meier estimator."),
+                            tags$li(strong("Initial Confounding Bias:"), " Measured as the absolute difference between the crude, unadjusted estimates and the true potential outcomes to quantify the severity of selection bias."),
+                            tags$li(strong("Estimator Bias:"), " Measured as the residual bias of the IPTW estimator to verify successful recovery of causal parameters."),
+                            tags$li(strong("Variance Validity:"), " The empirical variance of the Risk Difference (RD) and log Risk Ratio (log RR) across the 500 simulations was compared directly to the theoretical variance calculated by the application's planning formulas.")
+                          ),
+                          
+                          h3("2. Key Findings & The Limits of Kish's Formula"),
+                          p("The results broadly support the validity of the formulas. Even when the initial confounding bias in the raw data is extremely large, the IPTW estimator successfully mitigates the bias, and the ratio of empirical to theoretical variance remains highly stable (close to 1.00)."),
+                          p(HTML("However, the results highlight a known issue with Kish's design effect for sample size planning in causal inference. Kish's formula assumes that statistical weights are independent of the outcome. In the presence of strong confounding, the ratio of the actual empirical variance to the theoretical variance will often be slightly greater than 1. Kish's formula can be corrected, if pilot data are available (see Shook-Sa BE, Hudgens MG. <i>Power and sample size for observational studies of point exposure effects.</i> Biometrics. 2022 Mar;78(1):388-398.)")),
+                          p("As seen in the plots below, as the initial confounding bias increases, the theoretical variance can slightly underestimate the true empirical variance. Therefore, while Kish's formula provides a reliable baseline approach for planning, researchers suspecting severe confounding should be aware that their final study may have marginally lower power than the formula predicts."),
+                          
+                          hr(),
+                          h3("Variance Approximation Error by Confounding Strength"),
+                          girafeOutput("sim_plot", width = "100%", height = "600px"),
+                          
+                          br(),
+                          h3("Detailed Simulation Results Grid"),
+                          DTOutput("sim_table")
+                   )
+                 )
         )
-    )
-)
 
       )
     )
@@ -884,61 +888,68 @@ server <- function(input, output, session) {
   output$sim_plot <- renderGirafe({
     req(validation_data())
     d <- validation_data()
-
+    
+    # Safely ensure numeric types for the plot axes
+    d <- d %>% mutate(across(c(Confounding_RD, Confounding_logRR), as.numeric))
+    
     d_plot <- d %>%
-      #filter(Abs_Bias_RD > 0) %>%
       mutate(
         Scenario = paste(BaseRisk, Censoring, sep = ", "),
         Sample_Size = factor(N, levels = c(500, 2000, 10000))
       )
-
-    p1 <- ggplot(d_plot, aes(x = Abs_Bias_RD, y = Ratio_RD, color = Assoc_AX)) +
+    
+    # Plot 1: Risk Difference
+    p1 <- ggplot(d_plot, aes(x = Confounding_RD, y = Ratio_RD, color = Assoc_AX)) +
       geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
       geom_point_interactive(
-        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Abs Bias (RD): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX,Assoc_YX, Abs_Bias_RD, Ratio_RD)),
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (RD): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_RD, Ratio_RD)),
         size = 3, alpha = 0.7
       ) + 
       labs(
-        x = "\nAbsolute Confounding Bias (Raw Risk Difference)",
+        x = "\nMagnitude of Initial Confounding Bias (RD)",
         y = "Empirical Variance / \nTheoretical Variance\n",
-        color = "Sample Size",
-        title = "Variance Approximation Error vs. Confounding Strength"
+        color = "Selection\nBias (A~X)"
       ) +
       plot_theme +
       scale_color_viridis_d(end = 0.8)
     
-    p2 <- ggplot(d_plot, aes(x = Abs_Bias_RR, y = Ratio_logRR, color = Assoc_AX)) +
+    # Plot 2: Log Risk Ratio
+    p2 <- ggplot(d_plot, aes(x = Confounding_logRR, y = Ratio_logRR, color = Assoc_AX)) +
       geom_hline(yintercept = 1.0, linetype = "dashed", color = "gray50") +
       geom_point_interactive(
-        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Abs Bias (log RR): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX,Assoc_YX, Abs_Bias_RR, Ratio_logRR)),
+        aes(tooltip = sprintf("<b>N=%d</b><br>Baseline Risk: %s<br>A-X Association: %s<br>Y-X Association: %s<br>Initial Confounding (log RR): %.3f<br>Variance Ratio: %.3f", N, BaseRisk, Assoc_AX, Assoc_YX, Confounding_logRR, Ratio_logRR)),
         size = 3, alpha = 0.7
       ) + 
       labs(
-        x = "\nAbsolute Confounding Bias (Log Risk Ratio)",
+        x = "\nMagnitude of Initial Confounding Bias (Log RR)",
         y = "Empirical Variance / \n Theoretical Variance\n",
-        color = "Sample Size",
-        title = "Variance Approximation Error vs. Confounding Strength"
+        color = "Selection\nBias (A~X)"
       ) +
       plot_theme +
       scale_color_viridis_d(end = 0.8)
-      
+    
     p = p1 / p2
-
+    
     girafe(ggobj = p, options = list(opts_hover(css = "fill:black; stroke:black;")))
   })
-
+  
   # Validation table: Full simulation results
   output$sim_table <- renderDT({
     req(validation_data())
     d <- validation_data()
-
+    
     d %>%
+      # Coerce formatting strings back to numeric to allow math/rounding
+      mutate(across(c(True_p1, True_p2, Confounding_RD, IPTW_Bias_RD, Confounding_logRR, IPTW_Bias_logRR), as.numeric)) %>%
+      # Pull in the new columns
       select(N, BaseRisk, Censoring, Assoc_YX,
-             True_p1, True_p2, Abs_Bias_RD,
+             True_p1, True_p2, 
+             Confounding_RD, IPTW_Bias_RD,
+             Confounding_logRR, IPTW_Bias_logRR,
              Theo_Var_RD, Emp_Var_RD, Ratio_RD,
              Theo_Var_logRR, Emp_Var_logRR, Ratio_logRR) %>%
       mutate(
-        across(c(True_p1, True_p2, Abs_Bias_RD), ~round(., 3)),
+        across(c(True_p1, True_p2, Confounding_RD, IPTW_Bias_RD, Confounding_logRR, IPTW_Bias_logRR), ~round(., 3)),
         across(starts_with("Theo_"), ~format(., scientific = TRUE, digits = 3)),
         across(starts_with("Emp_"), ~format(., scientific = TRUE, digits = 3)),
         across(starts_with("Ratio_"), ~round(., 3))
@@ -947,15 +958,18 @@ server <- function(input, output, session) {
         `Sample Size` = N,
         `Base Risk` = BaseRisk,
         `Censoring` = Censoring,
-        `Confounding` = Assoc_YX,
+        `Confounding (Y~X)` = Assoc_YX,
         `True p1` = True_p1,
         `True p2` = True_p2,
-        `Abs Bias (RD)` = Abs_Bias_RD,
-        `Theoretical Var (RD)` = Theo_Var_RD,
-        `Empirical Var (RD)` = Emp_Var_RD,
+        `Init Bias (RD)` = Confounding_RD,
+        `IPTW Bias (RD)` = IPTW_Bias_RD,
+        `Init Bias (log RR)` = Confounding_logRR,
+        `IPTW Bias (log RR)` = IPTW_Bias_logRR,
+        `Theo Var (RD)` = Theo_Var_RD,
+        `Emp Var (RD)` = Emp_Var_RD,
         `Ratio (RD)` = Ratio_RD,
-        `Theoretical Var (log RR)` = Theo_Var_logRR,
-        `Empirical Var (log RR)` = Emp_Var_logRR,
+        `Theo Var (log RR)` = Theo_Var_logRR,
+        `Emp Var (log RR)` = Emp_Var_logRR,
         `Ratio (log RR)` = Ratio_logRR
       ) %>%
       datatable(
