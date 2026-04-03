@@ -90,17 +90,7 @@ testthat::test_dir("tests/testthat")
 
 ## Validation
 
-The finite sample performance of all methods is validated through extensive simulations (`simulation_study.Rmd`). The validation study tests:
-
-- **Sample sizes**: 50 to 5,000
-- **Censoring rates**: 0% to 60%
-- **Confounding levels**: None, Moderate, Strong
-
-Results include:
-- Confidence interval coverage rates
-- Statistical power
-- Bias and RMSE
-- Variance inflation factors
+The finite sample performance of all methods is validated through extensive simulations (`simulation_study.Rmd`). The simulation is described in the application.
 
 ## Statistical Methods
 
