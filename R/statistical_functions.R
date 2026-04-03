@@ -1,5 +1,36 @@
-# Statistical Functions for Study Size Planning
-# This file contains all statistical computations used in the Shiny app
+# ==============================================================================
+# Script: statistical_functions.R
+# Author: Alan Brookhart (alan.brookhart@duke.edu)
+# Date: April 2026
+#
+# Description: 
+#   The core statistical engine for the study size planning 
+#   application. This script contains all closed-form mathematical derivations 
+#   required to estimate precision and statistical power for observational 
+#   cohort studies subject to right-censoring and confounding adjustment.
+#
+# Key Methodologies:
+#   - Baseline Variance: Standard binomial variance estimators.
+#   - Censoring Adjustment: Closed-form asymptotic variance of the Kaplan-Meier 
+#     risk estimator under exponential event and independent censoring times 
+#     (Greenwood's formula).
+#   - Confounding Adjustment: Approximate variance inflation for Inverse 
+#     Probability of Treatment Weighting (IPTW) using Kish's design effect.
+#   - Effect Measures: Confidence interval bounds and power calculations for 
+#     both the Risk Difference (additive) and Risk Ratio (multiplicative/log scale).
+#
+# Optimization Solvers:
+#   Includes univariate root-finding functions (`solve_sample_size_rd` and `_rr`) 
+#   to dynamically back-calculate the required sample size to achieve a target 
+#   statistical power given user-defined parameters.
+#
+# Usage:
+#   This file is sourced dynamically by the Shiny server (`app.R`) for real-time 
+#   UI calculations and by the validation suite (`simulation_study.R`) to 
+#   generate theoretical benchmarks for the Monte Carlo simulations. All functions 
+#   are thoroughly unit-tested.
+# ==============================================================================
+
 
 #' Calculate Greenwood's Variance with Closed-Form Solution
 #'

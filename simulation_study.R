@@ -1,3 +1,39 @@
+# ==============================================================================
+# Script: simulation_study.R
+# Author: Alan Brookhart (alan.brookhart@duke.edu)
+# Date: April 2026
+#
+# Description: 
+#   Monte Carlo simulation study to validate the finite-sample performance of 
+#   causal inference variance estimators for time-to-event outcomes. 
+#   Specifically evaluates the use of closed-form Greenwood variance formulas 
+#   combined with Kish's design effect (variance inflation) for Inverse 
+#   Probability of Treatment Weighting (IPTW).
+#
+# Data Generating Mechanism (DGM):
+#   - Generates an observational cohort with an exponential survival model.
+#   - Induces selection bias via a bounded continuous confounder (Uniform dist.) 
+#     to prevent mathematically degenerative hazard extremes.
+#   - Simulates independent right-censoring.
+#
+# Simulation Grid:
+#   Evaluates 162 scenarios (500 iterations each) varying:
+#     - Sample Size (N = 500; 2,000; 10,000)
+#     - Baseline Risk (~5%, ~20%, ~50%)
+#     - Censoring (None, Modest, High)
+#     - Selection Bias & Outcome Association (None, Modest, Strong)
+#
+# Evaluated Metrics:
+#   1. Initial Confounding Bias (crude vs. true marginal potential outcomes)
+#   2. IPTW Estimator Bias (weighted vs. true marginal potential outcomes)
+#   3. Variance Validity (Empirical MC Variance / Theoretical Variance)
+#      Evaluated on both the Risk Difference (RD) and log Risk Ratio (log RR) scales.
+#
+# Output:
+#   Generates 'results.csv', which is consumed by the Shiny application (app.R) 
+#   to populate the "Methodological Validation" tab.
+# ==============================================================================
+
 # Load required libraries
 library(survival)
 library(dplyr)
