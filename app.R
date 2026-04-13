@@ -2,7 +2,7 @@
 # Script: app.R
 # Author: Alan Brookhart (alan.brookhart@duke.edu)
 # Date: April 2026
-# Version: 1.0.0
+# Version: 1.0.1
 #
 # Description: 
 #   Main Shiny application for the Causal Inference Study Size Planning tool.
@@ -35,8 +35,8 @@ library(ggiraph)
 library(patchwork)
 library(DT)
 
-APP_VERSION <- "1.0.0"
-APP_LAST_UPDATED <- "April 3rd, 2026"
+APP_VERSION <- "1.0.1"
+APP_LAST_UPDATED <- "April 13rd, 2026"
 
 # Source statistical functions
 source("R/statistical_functions.R")
@@ -281,12 +281,12 @@ ui <- fluidPage(
         conditionalPanel(
           condition = "input.calc_mode == 'power'",
           sliderInput("RRrange", "Risk Ratio Range:",
-                      min = 0.5, max = 5, value = c(1.0, 2.0), step = 0.1)
+                      min = 0.2, max = 5, value = c(1.0, 2.0), step = 0.1)
         ),
         conditionalPanel(
           condition = "input.calc_mode == 'sample_size'",
           sliderInput("RRrange_ss", "Risk Ratio Range:",
-                      min = 0.5, max = 5, value = c(1.1, 2.0), step = 0.1)
+                      min = 0.2, max = 5, value = c(1.1, 2.0), step = 0.1)
         )
       ),
 
@@ -324,7 +324,8 @@ ui <- fluidPage(
                  ),
                 h3("Version History"),
                  tags$ul(
-                   tags$li(strong("v1.0.0 (April 3rd, 2026): "), "Initial release.")
+                   tags$li(strong("v1.0.0 (April 3rd, 2026): "), "Initial release."),
+                   tags$li(strong("v1.0.1 (April 13rd, 2026): "), "Changing risk ratio range.")
                  )
         ),
         # Power Calculation Mode Tabs
@@ -897,7 +898,7 @@ server <- function(input, output, session) {
              Power_RR = sprintf("%.1f%%", Power_RR * 100),
              across(starts_with("Width"), ~round(., 4)),
              across(c(RD, RR), ~round(., 4))) %>%
-      rename(`Prob Grp 1` = P_1, `Prob Grp 2` = P_2) %>%
+      rename(`Group 1 Risk` = P_1, `Group 2 Risk` = P_2) %>%
       datatable(
         extensions = 'Buttons',
         options = list(

@@ -1,6 +1,6 @@
 Package: StudySizePlanning
 Title: Study Design Precision and Power Calculator
-Version: 1.0.0
+Version: 1.0.1
 Authors@R:
     person("M. Alan Brookhart", email = "alan@brookhart.org", role = c("aut", "cre"))
 Description: Interactive Shiny application for calculating precision and
