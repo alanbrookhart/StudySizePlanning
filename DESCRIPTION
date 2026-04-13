@@ -1,8 +1,8 @@
-Package: StudySizePlanning
-Title: Study Design Precision and Power Calculator
+Title: StudySizePlanning
 Version: 1.0.1
-Authors@R:
+Author:
     person("M. Alan Brookhart", email = "alan@brookhart.org", role = c("aut", "cre"))
+Type: Application
 Description: Interactive Shiny application for calculating precision and
     statistical power in cohort studies with various complications including
     censoring, IPTW, and clustering.
