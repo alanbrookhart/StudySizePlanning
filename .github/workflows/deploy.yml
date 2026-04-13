@@ -92,7 +92,7 @@ jobs:
             appTitle = 'Study Design: Precision & Power Calculator',
             forceUpdate = TRUE,
             launch.browser = FALSE,
-            logLevel = 'verbose'
+            logLevel = 'normal'
           )
 
           cat('\n✓ Deployment complete!\n')
