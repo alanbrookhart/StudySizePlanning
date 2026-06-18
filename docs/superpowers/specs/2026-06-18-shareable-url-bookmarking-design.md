@@ -39,17 +39,9 @@ Three small edits to `app.R`:
    shinyApp(ui = ui, server = server, enableBookmarking = "url")
    ```
 
-## Edge Case: the `v1`/`v2` Observer
+## Non-Issue: the `v1`/`v2` Observer
 
-`app.R:890-891` updates `v1` and `v2` reactively from `beta` (the IPTW Simulation tab's slider) via `updateNumericInput`. When restoring a bookmark, Shiny populates all inputs from the URL — but that observer may then fire because `beta` is also restored, overwriting the restored `v1`/`v2` with whatever values the observer recomputes.
-
-**Fix:** Use Shiny's `onRestore()` hook to set a one-shot suppression flag that skips the observer for the first reactive flush after a restore. Concretely:
-
-- Inside `server`, declare `restoring <- reactiveVal(FALSE)`.
-- Register `onRestore(function(state) { restoring(TRUE) })`.
-- At the top of the `v1`/`v2` observer, `if (isTRUE(restoring())) { restoring(FALSE); return() }`.
-
-This preserves normal interactive behavior (changing `beta` still updates `v1`/`v2`) while letting saved `v1`/`v2` values survive a bookmark restore.
+`app.R:888-892` updates `v1` and `v2` via `updateNumericInput` — but only inside `observeEvent(input$autopop, ...)`, which fires when the user clicks the **"Autopopulate Sidebar Parameters"** action button on the IPTW Simulation tab. Action-button observers do not fire on bookmark restore (the button's reactive value stays at its prior state), so saved `v1`/`v2` values will be restored cleanly. No suppression flag needed.
 
 ## URL Shape
 
