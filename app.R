@@ -42,7 +42,7 @@ APP_LAST_UPDATED <- "April 13rd, 2026"
 source("R/statistical_functions.R")
 
 # --- 2. UI Definition ---
-ui <- fluidPage(
+ui <- function(request) fluidPage(
   
   # Initialize MathJax for LaTeX rendering
   withMathJax(),
@@ -1024,4 +1024,4 @@ server <- function(input, output, session) {
   })
 }
 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, enableBookmarking = "url")
