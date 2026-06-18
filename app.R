@@ -298,7 +298,10 @@ ui <- function(request) fluidPage(
       numericInput("cens_2", "Censoring Risk (Group 2):", 0.20, min = 0, max = 0.99, step = 0.05),
 
       numericInput("v1", "IPTW Variance Inflation (Group 1):", 1.3, min = 1, step = 0.1),
-      numericInput("v2", "IPTW Variance Inflation (Group 2):", 1.3, min = 1, step = 0.1)
+      numericInput("v2", "IPTW Variance Inflation (Group 2):", 1.3, min = 1, step = 0.1),
+
+      hr(),
+      bookmarkButton(label = "Bookmark this configuration")
     ),
     
     mainPanel(
