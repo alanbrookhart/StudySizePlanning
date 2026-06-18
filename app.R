@@ -268,8 +268,8 @@ ui <- function(request) fluidPage(
         conditionalPanel(
           condition = "input.calc_mode == 'power'",
           sliderInput("RDrange", "Risk Difference Range:",
-                      min = 0, max = 0.2, value = c(0.00, 0.10), step = 0.005)
-        ),
+                      min = -0.2, max = 0.2, value = c(-0.10, 0.10), step = 0.005)
+          ),
         conditionalPanel(
           condition = "input.calc_mode == 'sample_size'",
           sliderInput("RDrange_ss", "Risk Difference Range:",
@@ -684,10 +684,13 @@ server <- function(input, output, session) {
 
     # Generate effect sequence based on measure type
     if (input$effect_measure == "RD") {
+      # For Risk Difference:
       effect_seq <- seq(input$RDrange_ss[1], input$RDrange_ss[2], length.out = input$steps)
-      # Filter out zero effect (no power calculation needed)
       effect_seq <- effect_seq[effect_seq != 0]
       p2_seq <- pmin(pmax(input$p1 + effect_seq, 0.001), 0.999)
+      
+      # Recalculate the true effect sequence plotted on the X-axis
+      effect_seq <- p2_seq - input$p1
 
       # Calculate required n1 for each RD
       n1_baseline <- sapply(seq_along(effect_seq), function(i) {
@@ -711,10 +714,12 @@ server <- function(input, output, session) {
     } else {
       # Risk Ratio
       effect_seq <- seq(input$RRrange_ss[1], input$RRrange_ss[2], length.out = input$steps)
-      # Filter out RR = 1 (null)
       effect_seq <- effect_seq[effect_seq != 1]
       p2_seq <- pmin(pmax(input$p1 * effect_seq, 0.001), 0.999)
-
+      
+      # Recalculate the true effect sequence plotted on the X-axis
+      effect_seq <- p2_seq / input$p1
+      
       # Calculate required n1 for each RR
       n1_baseline <- sapply(seq_along(effect_seq), function(i) {
         solve_sample_size_rr(target_power, input$p1, p2_seq[i],
